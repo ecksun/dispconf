@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"time"
 )
 
 type output struct {
@@ -153,6 +154,31 @@ func main() {
 		if wide.status == "connected" {
 			cmd := exec.Command("xrandr", "--output", wide.name, "--auto", "--above", laptop.name)
 			if err := cmd.Run(); err != nil {
+				panic(err)
+			}
+		}
+	case "1920x1080 2560x1440 2560x1440":
+		fmt.Printf("connectedOutputs = %+v\n", connectedOutputs)
+		laptop := connectedOutputs[0]
+		middle := connectedOutputs[1]
+		right := connectedOutputs[2]
+		if laptop.status == "connected" {
+			fmt.Println([]string{"xrandr", "--output", laptop.name, "--auto"})
+		}
+		if middle.status == "connected" {
+			fmt.Println("Configuring middle monitor")
+			cmd := exec.Command("xrandr", "--output", middle.name, "--auto", "--above", laptop.name)
+			if out, err := cmd.CombinedOutput(); err != nil {
+				fmt.Println(string(out))
+				panic(err)
+			}
+		}
+		if right.status == "connected" {
+			time.Sleep(1 * time.Second)
+			fmt.Println("Configuring right monitor")
+			cmd := exec.Command("xrandr", "--output", right.name, "--auto", "--right-of", middle.name, "--rotate", "left")
+			if out, err := cmd.CombinedOutput(); err != nil {
+				fmt.Println(string(out))
 				panic(err)
 			}
 		}
